@@ -151,7 +151,7 @@ Resources:
       ClusterName:
         Ref: EKS2
       NodeRole: !GetAtt nodeGroup.Arn 
-      InstanceTypes: [ t3.large ]
+      InstanceTypes: [ t3.medium ]
       ScalingConfig:
         MinSize: 1
         DesiredSize: 3
