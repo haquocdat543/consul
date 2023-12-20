@@ -48,14 +48,16 @@ helm repo add hashicorp https://helm.releases.hashicorp.com
 ```
 helm install eks1 hashicorp/consul --version 1.0.0 --values consul-values.yaml --set global.datacenter=eks1
 ```
-Access service
-```
-kubectl get svc
-```
 Apply 11 tiers resources
 ```
 kubectl apply -f config-consul.yaml
 ```
+Access service
+```
+kubectl get svc
+```
+* Copy `consul-ui` `loadbalancerDNS` and access it on browser. `https://<loadbalancerDNS>`
+* Copy `frontend-external` `loadbalancerDNS` and access it on browser. 
 ### 7. Install consul on EKS2 cluster
 ```
 aws eks update-kubeconfig --name EKS2
@@ -67,18 +69,42 @@ Apply 11 tiers resources
 ```
 kubectl apply -f config-consul.yaml
 ```
+Access service
+```
+kubectl get svc
+```
+* Copy `consul-ui` `loadbalancerDNS` and access it on browser. `https://<loadbalancerDNS>`
+* Copy `frontend-external` `loadbalancerDNS` and access it on browser. 
 ### 8. Install mesh gateway
 ```
 kubectl apply -f consul-mesh-gateway.yaml
 ```
+* Open `eks1` consul ui > left corner > `Peers` ( at bottom ) > `Add peer connection` > `Generate token` > Enter `peer name` > `Generate token` > Copy it
+* Open `eks2` consul ui > left corner > `Peers` ( at bottom ) > `Add peer connection` > `Establish peering` > Enter `Name of peer` > Paste `token` > `Add peer`
+
 ## 3. Destroy
-patch all loadbalancer to Cluster ip
+### 1. Patch loadbalancer
+* Patch all loadbalancer to Cluster IP
+#### 1. EKS1
+```
+kubectl patch svc frontend-external -n default -p '{"spec": {"type": "ClusterIP"}}'
+kubectl patch svc eks1-consul-ui -n default -p '{"spec": {"type": "ClusterIP"}}'
+kubectl patch svc eks1-consul-mesh-gateway -n default -p '{"spec": {"type": "ClusterIP"}}'
+```
+#### 2. EKS2
+```
+kubectl patch svc frontend-external -n default -p '{"spec": {"type": "ClusterIP"}}'
+kubectl patch svc eks2-consul-ui -n default -p '{"spec": {"type": "ClusterIP"}}'
+kubectl patch svc eks2-consul-mesh-gateway -n default -p '{"spec": {"type": "ClusterIP"}}'
+```
+* Or you can go to AWS console and delete all loadbalancer used by two EKS cluster
+### 2. Delete role stack
 ```
 aws cloudformation delete-stack --stack-name eksctl-EKS1-addon-iamserviceaccount-kube-system-ebs-csi-controller-sa
 aws cloudformation delete-stack --stack-name eksctl-EKS2-addon-iamserviceaccount-kube-system-ebs-csi-controller-sa
 ```
+### 3. Delete eks stack
 ```
 aws cloudformation delete-stack --stack-name k8s1
 aws cloudformation delete-stack --stack-name k8s2
 ```
-
