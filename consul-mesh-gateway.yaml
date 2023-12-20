@@ -1,31 +1,7 @@
-global:
-  image: "hashicorp/consul:1.14.0"
+piVersion: consul.hashicorp.com/v1alpha1
+kind: Mesh
+metadata:
+  name: mesh
+spec:
   peering:
-    enabled: true
-  tls:
-    enabled: true
-
-server:
-  replicas: 1
-  bootstrapExpect: 1
-  extraConfig: |
-    {
-      "log_level": "TRACE"
-    }
-
-connectInject:
-  enabled: true
-  default: true
-
-meshGateway:
-  enabled: true
-  replicas: 1
-
-controller:
-  enabled: true
-
-ui:
-  enabled: true
-  service:
-    enabled: true
-    type: LoadBalancer
+    peerThroughMeshGateways: true

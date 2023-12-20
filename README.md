@@ -41,15 +41,35 @@ aws cloudformation describe-stacks --query Stacks[].Outputs[*].[OutputKey,Output
 ```
 aws eks update-kubeconfig --name eks1
 ```
-### 5. Install consul on eks cluster
+### 5. Install consul on k8s1 cluster
 ```
 helm repo add hashicorp https://helm.releases.hashicorp.com
 ```
 ```
-helm install k8s1 hashicorp/consul --version 1.0.0 --values consul-mesh-gateway.yaml --set global.datacenter=k8s1
+helm install k8s1 hashicorp/consul --version 1.0.0 --values consul-values.yaml --set global.datacenter=k8s1
 ```
 Access service
 ```
 kubectl get svc
 ```
+Apply 11 tiers resources
+```
+kubectl apply -f config-consul.yaml
+```
+### 7. Install consul on k8s2 cluster
+```
+aws eks update-kubeconfig --name eks2
+```
+```
+helm install k8s2 hashicorp/consul --version 1.0.0 --values consul-values.yaml --set global.datacenter=k8s2
+```
+Apply 11 tiers resources
+```
+kubectl apply -f config-consul.yaml
+```
+### 8. Install mesh gateway
+```
+kubectl apply -f consul-mesh-gateway.yaml
+```
+
 
